@@ -2,6 +2,11 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.0.1
+
+Fixed wrong path to directory with test-coverage report.
+File tests/bootstrap.php removed, phpunit-configuration files adjusted.
+
 ## 2.0.0
 
 * shift to PHP version 5.6
