@@ -1,6 +1,14 @@
 # Changelog
 
-All Notable changes to `fiisoft-basics` will be documented in this file
+All important changes to `fiisoft-basics` will be documented in this file
+
+## 2.0.0
+
+* shift to PHP version 5.6
+* upgrade required phpunit version to ^5.7.19
+* add phpunit.xml and phpunit-cc.xml files 
+* git ignore /tests/coverage
+* git ignore Eclipse project's files and folders
 
 ## 1.0.0
 
