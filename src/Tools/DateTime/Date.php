@@ -55,6 +55,50 @@ final class Date
     }
     
     /**
+     * @param DateTimeInterface|string|integer $date as object, string or timestamp
+     * @throws InvalidArgumentException
+     * @return DateTime
+     */
+    public static function mutable($date)
+    {
+        if ($date instanceof DateTimeInterface) {
+            return new DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
+        }
+    
+        if (is_string($date)) {
+            return new DateTime($date);
+        }
+    
+        if (is_int($date)) {
+            return new DateTime('@'.$date);
+        }
+    
+        throw new InvalidArgumentException('Invalid param date - cannot be converted to DateTime');
+    }
+    
+    /**
+     * @param DateTimeInterface|string|integer $date as object, string or timestamp
+     * @throws InvalidArgumentException
+     * @return DateTimeInterface
+     */
+    public static function object($date)
+    {
+        if ($date instanceof DateTimeInterface) {
+            return $date;
+        }
+    
+        if (is_string($date)) {
+            return new DateTimeImmutable($date);
+        }
+    
+        if (is_int($date)) {
+            return new DateTimeImmutable('@'.$date);
+        }
+    
+        throw new InvalidArgumentException('Invalid param date - cannot be converted to DateTimeInterface');
+    }
+    
+    /**
      * Tell if given date is in future.
      *
      * @param DateTimeInterface|string|integer $date as object, string or timestamp
@@ -63,7 +107,7 @@ final class Date
      */
     public static function isInFuture($date)
     {
-        return self::immutable($date) > self::immutable('now');
+        return self::object($date) > self::object('now');
     }
     
     /**
@@ -76,6 +120,17 @@ final class Date
      */
     public static function isFirstOlderThenSecond($first, $second)
     {
-        return self::immutable($first) < self::immutable($second);
+        return self::object($first) < self::object($second);
+    }
+    
+    /**
+     * @param DateTimeInterface|string|integer $first as object, string or timestamp
+     * @param DateTimeInterface|string|integer $second as object, string or timestamp
+     * @throws InvalidArgumentException
+     * @return bool
+     */
+    public static function isFirstNotOlderThenSecond($first, $second)
+    {
+        return self::object($first) >= self::object($second);
     }
 }

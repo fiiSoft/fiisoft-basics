@@ -2,6 +2,13 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.1.0
+
+Added new static methods to class Date:
+- mutable(): DateTime
+- object(): DateTimeInterface
+- isFirstNotOlderThenSecond(): bool
+
 ## 2.0.1
 
 Fixed wrong path to directory with test-coverage report.

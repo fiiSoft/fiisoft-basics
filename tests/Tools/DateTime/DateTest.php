@@ -5,6 +5,7 @@ namespace FiiSoft\Test\Tools\DateTime;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use FiiSoft\Tools\DateTime\Date;
 
 class DateTest extends \PHPUnit_Framework_TestCase
@@ -37,10 +38,8 @@ class DateTest extends \PHPUnit_Framework_TestCase
     {
         $dt = new DateTime();
         $actual = Date::immutable($dt);
-        
-        self::assertSame($dt->getTimestamp(), $actual->getTimestamp());
-        self::assertSame($dt->getOffset(), $actual->getOffset());
-        self::assertSame($dt->getTimezone()->getName(), $actual->getTimezone()->getName());
+    
+        $this->assertDateTimeInterfaceObjectsAreTheSame($dt, $actual);
     }
     
     public function test_immutable_can_be_created_from_string()
@@ -79,5 +78,80 @@ class DateTest extends \PHPUnit_Framework_TestCase
         
         self::assertTrue(Date::isFirstOlderThenSecond($yesterday, $tomorrow));
         self::assertFalse(Date::isFirstOlderThenSecond($tomorrow, $yesterday));
+    }
+    
+    public function test_mutable_can_be_created_from_other_mutable()
+    {
+        $now = new DateTime();
+        $actual = Date::mutable($now);
+        
+        self::assertNotSame($now, $actual);
+        self::assertInstanceOf(DateTime::class, $actual);
+        
+        $this->assertDateTimeInterfaceObjectsAreTheSame($now, $actual);
+    }
+    
+    public function test_mutable_can_be_created_from_immutable()
+    {
+        $now = new DateTimeImmutable();
+        $actual = Date::mutable($now);
+    
+        self::assertInstanceOf(DateTime::class, $actual);
+        $this->assertDateTimeInterfaceObjectsAreTheSame($now, $actual);
+    }
+    
+    public function test_mutable_can_be_created_from_string()
+    {
+        $date = '2017-02-15 17:38:46';
+        $actual = Date::mutable($date);
+    
+        self::assertInstanceOf(DateTime::class, $actual);
+        self::assertSame($date, $actual->format('Y-m-d H:i:s'));
+    }
+    
+    public function test_mutable_can_be_created_from_timestamp()
+    {
+        $timestamp = time();
+        $date = Date::mutable($timestamp);
+     
+        self::assertSame($timestamp, $date->getTimestamp());
+    }
+    
+    public function test_it_fetch_any_DateTimeInterface_object()
+    {
+        $mutable = Date::mutable('now');
+        $immutable = Date::immutable('now');
+        
+        self::assertSame($mutable, Date::object($mutable));
+        self::assertSame($immutable, Date::object($immutable));
+    
+        $date = $mutable->format('Y-m-d');
+        self::assertSame($date, Date::object($date)->format('Y-m-d'));
+    
+        $timestamp = $mutable->getTimestamp();
+        self::assertSame($timestamp, Date::object($timestamp)->getTimestamp());
+    }
+    
+    public static function test_can_tell_if_some_date_is_not_older_then_other()
+    {
+        $now = new DateTimeImmutable();
+        $tomorrow = $now->add(new DateInterval('P1D'));
+        $yesterday = $now->sub(new DateInterval('P1D'));
+    
+        self::assertTrue(Date::isFirstNotOlderThenSecond($tomorrow, $yesterday));
+        self::assertTrue(Date::isFirstNotOlderThenSecond($tomorrow, $now));
+        self::assertTrue(Date::isFirstNotOlderThenSecond($now, $yesterday));
+        self::assertTrue(Date::isFirstNotOlderThenSecond($now, $now));
+    }
+    
+    /**
+     * @param DateTimeInterface $expected
+     * @param DateTimeInterface $actual
+     */
+    private function assertDateTimeInterfaceObjectsAreTheSame(DateTimeInterface $expected, DateTimeInterface $actual)
+    {
+        self::assertSame($actual->getTimestamp(), $actual->getTimestamp());
+        self::assertSame($actual->getOffset(), $actual->getOffset());
+        self::assertSame($actual->getTimezone()->getName(), $actual->getTimezone()->getName());
     }
 }
