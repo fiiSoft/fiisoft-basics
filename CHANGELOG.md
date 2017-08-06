@@ -2,6 +2,13 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.2.0
+
+Added new static methods to class Date:
+ - areEqual(): bool
+ - time(): string
+ - date(): string
+
 ## 2.1.0
 
 Added new static methods to class Date:

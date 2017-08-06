@@ -133,4 +133,45 @@ final class Date
     {
         return self::object($first) >= self::object($second);
     }
+    
+    /**
+     * @param DateTimeInterface|string|integer $first as object, string or timestamp
+     * @param DateTimeInterface|string|integer $second as object, string or timestamp
+     * @param string $scope
+     * @throws InvalidArgumentException
+     * @return bool
+     */
+    public static function areEqual($first, $second, $scope = 'YmdHisT')
+    {
+        return self::format($first, $scope) === self::format($second, $scope);
+    }
+    
+    /**
+     * Get current date with time as a formatted string.
+     *
+     * @param string $format by default Y-m-d H:i:s
+     * @throws InvalidArgumentException
+     * @return string
+     */
+    public static function time($format = 'Y-m-d H:i:s')
+    {
+        return self::date($format);
+    }
+    
+    /**
+     * Get current date as a formatted string.
+     *
+     * @param string $format by default Y-m-d
+     * @throws InvalidArgumentException
+     * @return string
+     */
+    public static function date($format = 'Y-m-d')
+    {
+        $result = date($format);
+        if ($result === false) {
+            throw new InvalidArgumentException('Invalid param format');
+        }
+        
+        return $result;
+    }
 }

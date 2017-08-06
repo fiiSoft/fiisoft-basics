@@ -144,6 +144,32 @@ class DateTest extends \PHPUnit_Framework_TestCase
         self::assertTrue(Date::isFirstNotOlderThenSecond($now, $now));
     }
     
+    public function test_two_dates_are_equal_in_given_scope()
+    {
+        $d1 = Date::object('2017-08-06 15:43:07');
+        $d2 = Date::object('2017-08-07 13:43:09');
+        
+        self::assertFalse(Date::areEqual($d1, $d2));
+        self::assertFalse(Date::areEqual($d1, $d2, 'Ymd'));
+        
+        self::assertTrue(Date::areEqual($d1, $d2, 'i'));
+        self::assertTrue(Date::areEqual($d1, $d2, 'Ym'));
+    }
+    
+    public function test_get_current_time_as_string()
+    {
+        $now = Date::time();
+        self::assertSame(19, strlen($now));
+        self::assertTrue(Date::areEqual(new DateTimeImmutable(), $now, 'YmdHi'));
+    }
+    
+    public function test_get_current_date_as_string()
+    {
+        $today = Date::date();
+        self::assertSame(10, strlen($today));
+        self::assertTrue(Date::areEqual(new DateTimeImmutable(), $today, 'Ymd'));
+    }
+    
     /**
      * @param DateTimeInterface $expected
      * @param DateTimeInterface $actual
