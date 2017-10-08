@@ -2,6 +2,10 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.3.0
+
+Added two traits: StaticConstDict and TimeCachedResultHolder.
+
 ## 2.2.0
 
 Added new static methods to class Date:
