@@ -2,6 +2,10 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.4.0
+
+New method mergeCopyWith() in AbstractConfiguration.
+
 ## 2.3.0
 
 Added two traits: StaticConstDict and TimeCachedResultHolder.

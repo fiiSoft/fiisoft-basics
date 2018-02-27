@@ -94,4 +94,88 @@ class AbstractConfigurationTest extends \PHPUnit_Framework_TestCase
         $config2->fieldOne = 1;
         self::assertTrue($config1->equals($config2));
     }
+    
+    public function test_it_can_be_merged_with_other_config_object_or_array()
+    {
+        $config1 = new SampleTestConfiguration([
+            'fieldTwo' => 'bbbb',
+            'fieldThree' => 'cccc',
+        ]);
+        
+        $config2 = new SampleTestConfiguration([
+            'fieldOne' => 'aaaa',
+            'fieldThree' => null,
+        ], true);
+        
+        $config3 = [
+            'fieldOne' => null,
+            'fieldTwo' => 'eeee',
+            'fieldFour' => 'dddd',
+        ];
+        
+        $config4 = new ArrayAccessImpl('ffff');
+        
+        
+        $config = $config1->mergeCopyWith($config1);
+        $expected = [
+            'fieldOne' => null,
+            'fieldTwo' => 'bbbb',
+            'fieldThree' => 'cccc',
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config2);
+        $expected = [
+            'fieldOne' => 'aaaa',
+            'fieldTwo' => 3,
+            'fieldThree' => 'cccc',
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config2, false);
+        $expected = [
+            'fieldOne' => 'aaaa',
+            'fieldTwo' => 3,
+            'fieldThree' => null,
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config3);
+        $expected = [
+            'fieldOne' => 'aaaa',
+            'fieldTwo' => 'eeee',
+            'fieldThree' => null,
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config3, false);
+        $expected = [
+            'fieldOne' => null,
+            'fieldTwo' => 'eeee',
+            'fieldThree' => null,
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config4);
+        $expected = [
+            'fieldOne' => 'ffff',
+            'fieldTwo' => 'eeee',
+            'fieldThree' => null,
+        ];
+        self::assertSame($expected, $config->toArray());
+        
+        
+        $config = $config->mergeCopyWith($config4, false);
+        $expected = [
+            'fieldOne' => 'ffff',
+            'fieldTwo' => null,
+            'fieldThree' => null,
+        ];
+        self::assertSame($expected, $config->toArray());
+    }
 }

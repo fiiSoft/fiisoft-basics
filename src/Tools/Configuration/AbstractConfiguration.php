@@ -64,4 +64,48 @@ abstract class AbstractConfiguration
         
         return true;
     }
+    
+    /**
+     * Create copy of this configuration with merged other data.
+     *
+     * @param AbstractConfiguration|\Traversable|\ArrayAccess|array $other
+     * @param bool $notNull
+     * @throws \InvalidArgumentException if cannot merge $other to $this
+     * @return AbstractConfiguration copy of $this configuration with merged $other data
+     */
+    public function mergeCopyWith($other, $notNull = true)
+    {
+        $copy = clone $this;
+    
+        if ($other === $this) {
+            return $copy;
+        }
+        
+        if ($other instanceof self) {
+            foreach ($other->toArray($notNull) as $key => $value) {
+                if (property_exists($copy, $key)) {
+                    $copy->$key = $value;
+                }
+            }
+        } elseif (is_array($other) || $other instanceof \Traversable) {
+            foreach ($other as $key => $value) {
+                if (($notNull === false || $value !== null) && property_exists($copy, $key)) {
+                    $copy->$key = $value;
+                }
+            }
+        } else if ($other instanceof \ArrayAccess) {
+            foreach (array_keys(get_object_vars($copy)) as $key) {
+                if (isset($other[$key])) {
+                    $value = $other[$key];
+                    if ($notNull === false || $value !== null) {
+                        $copy->$key = $value;
+                    }
+                }
+            }
+        } else {
+            throw new \InvalidArgumentException('Invalid type of param other');
+        }
+        
+        return $copy;
+    }
 }
