@@ -2,6 +2,7 @@
 
 namespace FiiSoft\Test\Tools\Validation;
 
+use FiiSoft\Tools\Validation\SpecificationError;
 use FiiSoft\Tools\Validation\SpecificationValidator;
 
 class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
@@ -64,11 +65,13 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
     public function test_new_validator_has_no_error()
     {
         self::assertNull($this->validator->getLastError());
+        self::assertNull($this->validator->getLastErrorNumber());
     }
     
     public function test_it_can_detect_missing_node()
     {
         self::assertFalse($this->validator->isValid([]));
+        self::assertSame(SpecificationError::WRONG_NAME, $this->validator->getLastErrorNumber());
         self::assertSame('Item does not have name equal foo', $this->validator->getLastError());
     }
     
@@ -79,6 +82,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::NO_ATTRIBUTES, $this->validator->getLastErrorNumber());
         self::assertSame('Item does not have attributes', $this->validator->getLastError());
     }
     
@@ -90,6 +94,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::UNSPECIFIED_FIELDS, $this->validator->getLastErrorNumber());
         self::assertSame('Item has unspecified fields: attrtes', $this->validator->getLastError());
     }
     
@@ -101,6 +106,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::MISSING_ATTRIBUTE, $this->validator->getLastErrorNumber());
         self::assertSame('Item does not have required attribute defaultAttr', $this->validator->getLastError());
     }
     
@@ -114,6 +120,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::TOO_LONG_ATTRIBUTE, $this->validator->getLastErrorNumber());
         self::assertSame('Attribute defaultAttr length exceeded max 10 and is 18', $this->validator->getLastError());
     }
     
@@ -128,6 +135,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::INVALID_ENUM, $this->validator->getLastErrorNumber());
         self::assertSame(
             'Attribute enumAttr value (wrong value) does not satisfy enum constraint',
             $this->validator->getLastError()
@@ -147,6 +155,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::NOT_INTEGER, $this->validator->getLastErrorNumber());
         self::assertSame(
             'Attribute integerAttr value (wrong type) is not an integer',
             $this->validator->getLastError()
@@ -166,6 +175,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::MISSING_CHILDREN, $this->validator->getLastErrorNumber());
         self::assertSame(
             'Item foo cannot be empty but has no children',
             $this->validator->getLastError()
@@ -186,6 +196,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::MISSING_CHILD, $this->validator->getLastErrorNumber());
         self::assertSame('Child zoos is required but not found', $this->validator->getLastError());
     }
     
@@ -207,6 +218,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::UNSPECIFIED_CHILD, $this->validator->getLastErrorNumber());
         self::assertSame('Item has unspecified child named wroo', $this->validator->getLastError());
     }
     
@@ -233,6 +245,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::EMPTY_ITEM, $this->validator->getLastErrorNumber());
         self::assertSame('Item bar is empty but cannot be', $this->validator->getLastError());
     }
     
@@ -260,6 +273,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         ];
     
         self::assertFalse($this->validator->isValid($data));
+        self::assertSame(SpecificationError::MISSING_CHILD, $this->validator->getLastErrorNumber());
         self::assertSame('Child zoos is required but not found', $this->validator->getLastError());
     }
     
@@ -292,6 +306,7 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
     
         self::assertTrue($this->validator->isValid($validData), $this->validator->getLastError());
         self::assertNull($this->validator->getLastError());
+        self::assertNull($this->validator->getLastErrorNumber());
     }
     
     public function test_validate_full_rich_data_still_valid_should_be_ok()
@@ -339,5 +354,6 @@ class SpecificationValidatorTest extends \PHPUnit_Framework_TestCase
         
         self::assertTrue($this->validator->isValid($validData), $this->validator->getLastError());
         self::assertNull($this->validator->getLastError());
+        self::assertNull($this->validator->getLastErrorNumber());
     }
 }

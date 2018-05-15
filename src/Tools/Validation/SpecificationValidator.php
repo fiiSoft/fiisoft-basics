@@ -6,7 +6,7 @@ use DateTimeImmutable;
 use LogicException;
 use UnexpectedValueException;
 
-final class SpecificationValidator
+final class SpecificationValidator implements SpecificationError
 {
     /** @var array  */
     private $defaultAttrSpec = ['required' => true, 'type' => 'string'];
@@ -16,6 +16,9 @@ final class SpecificationValidator
     
     /** @var string description of last error */
     private $lastError;
+    
+    /** @var int number of last error */
+    private $lastErrorNo;
     
     /** @var array */
     private $specification;
@@ -59,6 +62,7 @@ final class SpecificationValidator
         }
         
         $this->lastError = null;
+        $this->lastErrorNo = null;
         
         return $this->validate($item, $this->normalized);
     }
@@ -73,6 +77,7 @@ final class SpecificationValidator
     {
         $diff = array_diff(array_keys($item), array_keys($specification), ['name', 'value']);
         if (!empty($diff)) {
+            $this->lastErrorNo = self::UNSPECIFIED_FIELDS;
             $this->lastError = 'Item has unspecified fields: '.implode(',', $diff);
             return false;
         }
@@ -80,18 +85,21 @@ final class SpecificationValidator
         foreach ($specification as $key => $spec) {
             if ($key === 'name') {
                 if (!isset($item[$key]) || $item[$key] !== $spec) {
+                    $this->lastErrorNo = self::WRONG_NAME;
                     $this->lastError = 'Item does not have name equal '.$spec;
                     return false;
                 }
                 
             } elseif ($key === 'attributes') {
                 if (!isset($item[$key]) || !is_array($item[$key])) {
+                    $this->lastErrorNo = self::NO_ATTRIBUTES;
                     $this->lastError = 'Item does not have attributes';
                     return false;
                 }
                 
                 $diff = array_diff(array_keys($item[$key]), array_keys($spec));
                 if (!empty($diff)) {
+                    $this->lastErrorNo = self::UNSPECIFIED_ATTRIBUTES;
                     $this->lastError = 'Item has unspecified attributes: '.implode(',', $diff);
                     return false;
                 }
@@ -99,6 +107,7 @@ final class SpecificationValidator
                 foreach ($spec as $attr => $attrSpec) {
                     if (!isset($item[$key][$attr])) {
                         if ($attrSpec['required']) {
+                            $this->lastErrorNo = self::MISSING_ATTRIBUTE;
                             $this->lastError = 'Item does not have required attribute '.$attr;
                             return false;
                         }
@@ -113,6 +122,8 @@ final class SpecificationValidator
                                 continue 2; //continue outer loop
                             }
                         }
+                        
+                        $this->lastErrorNo = self::INVALID_ENUM;
                         $this->lastError = 'Attribute '.$attr.' value ('. $attrValue
                                             .') does not satisfy enum constraint';
                         return false;
@@ -122,6 +133,7 @@ final class SpecificationValidator
                         && !empty($attrSpec['maxLength'])
                         && $this->strLength($attrValue) > $attrSpec['maxLength']
                     ) {
+                        $this->lastErrorNo = self::TOO_LONG_ATTRIBUTE;
                         $this->lastError = 'Attribute '.$attr.' length exceeded max '.$attrSpec['maxLength']
                                             .' and is '.$this->strLength($attrValue);
                         return false;
@@ -131,6 +143,7 @@ final class SpecificationValidator
                         && !empty($attrSpec['format'])
                         && !DateTimeImmutable::createFromFormat($attrSpec['format'], $attrValue)
                     ) {
+                        $this->lastErrorNo = self::INVALID_DATE_FORMAT;
                         $this->lastError = 'Attribute '.$attr.' value ('.$attrValue.') is not valid date in format '
                                             .$attrSpec['format'];
                         return false;
@@ -142,6 +155,7 @@ final class SpecificationValidator
                             || (is_string($attrValue) && ctype_digit($attrValue))
                         )
                     ) {
+                        $this->lastErrorNo = self::NOT_INTEGER;
                         $this->lastError = 'Attribute '.$attr.' value ('.$attrValue.') is not an integer';
                         return false;
                     }
@@ -153,11 +167,13 @@ final class SpecificationValidator
                         continue;
                     }
                     
+                    $this->lastErrorNo = self::MISSING_CHILDREN;
                     $this->lastError = 'Item '.$item['name'].' cannot be empty but has no children';
                     return false;
                 }
                 
                 if (!is_array($item[$key])) {
+                    $this->lastErrorNo = self::MALFORMED_ITEM_DATA;
                     $this->lastError = 'Item has children but it is not an array';
                     return false;
                 }
@@ -167,6 +183,7 @@ final class SpecificationValidator
                 foreach ($item[$key] as $child) {
                     $name = $child['name'];
                     if (!isset($spec[$name])) {
+                        $this->lastErrorNo = self::UNSPECIFIED_CHILD;
                         $this->lastError = 'Item has unspecified child named '.$name;
                         return false;
                     }
@@ -180,6 +197,7 @@ final class SpecificationValidator
     
                 foreach ($spec as $childName => $childSpec) {
                     if ($childSpec['required'] && !isset($foundItemChildren[$childName])) {
+                        $this->lastErrorNo = self::MISSING_CHILD;
                         $this->lastError = 'Child '.$childName.' is required but not found';
                         return false;
                     }
@@ -188,6 +206,7 @@ final class SpecificationValidator
                         && empty($foundItemChildren[$childName])
                         && isset($childSpec['children'])
                     ) {
+                        $this->lastErrorNo = self::CHILDLESS_CHILD;
                         $this->lastError = 'Child '.$childName.' cannot be childless but has no children';
                         return false;
                     }
@@ -199,12 +218,14 @@ final class SpecificationValidator
                 }
                 
                 if (empty($item['children']) && isset($specification['children'])) {
+                    $this->lastErrorNo = self::MISSING_CHILDREN;
                     $this->lastError = 'Item '.$item['name'].' has no children but cannot be childless';
                     return false;
                 }
                 
                 if (!isset($item['value']) && empty($item['attributes']) && empty($item['children'])
                 ) {
+                    $this->lastErrorNo = self::EMPTY_ITEM;
                     $this->lastError = 'Item '.$item['name'].' is empty but cannot be';
                     return false;
                 }
@@ -317,5 +338,13 @@ final class SpecificationValidator
     public function getLastError()
     {
         return $this->lastError;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getLastErrorNumber()
+    {
+        return $this->lastErrorNo;
     }
 }

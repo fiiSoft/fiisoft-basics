@@ -2,6 +2,10 @@
 
 All important changes to `fiisoft-basics` will be documented in this file
 
+## 2.5.0
+
+New method getLastErrorNumber() in SpecificationValidator.
+
 ## 2.4.0
 
 New method mergeCopyWith() in AbstractConfiguration.

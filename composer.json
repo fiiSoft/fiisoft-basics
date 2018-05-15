@@ -5,7 +5,7 @@
     "keywords": ["xml validation","specification validation","configuration","date formatting","date processing"],
     "homepage": "https://github.com/fiiSoft/fiisoft-basics",
     "license": "MIT",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "authors": [
         {
             "name": "FiiSoft",
